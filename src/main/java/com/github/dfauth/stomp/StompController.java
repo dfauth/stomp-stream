@@ -1,6 +1,5 @@
 package com.github.dfauth.stomp;
 
-import akka.http.scaladsl.model.ws.Message;
 import akka.http.scaladsl.model.ws.TextMessage;
 import org.reactivestreams.Processor;
 import org.reactivestreams.Subscriber;
@@ -23,18 +22,18 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 
-public class StompController implements Processor<Message, Message> {
+public abstract class StompController<T> implements Processor<T, T> {
 
     private static final Logger logger = LoggerFactory.getLogger(StompController.class);
-    private Subscriber<? super Message> subscriber;
-    private Consumer<Message> websocketConsumer;
+    private Subscriber<? super T> subscriber;
+    private Consumer<T> websocketConsumer;
     private StompDecoder decoder = new StompDecoder();
     private StompEncoder encoder = new StompEncoder();
     private Consumer<org.springframework.messaging.Message<byte[]>> messageConsumer;
     private BiConsumer<StompCommand, Map<String, List<String>>> stompCommandConsumer;
     private MaybeLater<Subscription> subscription = new MaybeLater();
 
-    public void addWebsocketConsumer(Consumer<Message> consumer) {
+    public void addWebsocketConsumer(Consumer<T> consumer) {
         this.websocketConsumer = consumer;
     }
 
@@ -98,12 +97,14 @@ public class StompController implements Processor<Message, Message> {
 
     public void publish(GenericMessage<byte[]> m) {
         byte[] bytes = encoder.encode(m);
-        subscriber.onNext(new TextMessage.Strict(new String(bytes)));
+        subscriber.onNext(wrap(new String(bytes)));
     }
+
+    protected abstract T wrap(String s);
 
     // publisher
     @Override
-    public void subscribe(Subscriber<? super Message> s) {
+    public void subscribe(Subscriber<? super T> s) {
         this.subscriber = s;
         this.subscription = subscription.accept(v -> {
             this.subscriber.onSubscribe(v);
@@ -118,7 +119,7 @@ public class StompController implements Processor<Message, Message> {
     }
 
     @Override
-    public void onNext(Message m) {
+    public void onNext(T m) {
         websocketConsumer.accept(m);
     }
 
