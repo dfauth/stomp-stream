@@ -13,10 +13,9 @@ function setConnected(connected) {
 }
 
 function connect() {
-    stompClient = Stomp.client('ws://127.0.0.1:8081/subscribe');
-    stompClient.debug = function(str) {
-        console.log('stompClient debug: ' + str);
-    };
+    const wsUrl = "ws://"+window.location.host+"/subscribe"
+    const socket = new WebSocket(wsUrl);
+    stompClient = Stomp.over(socket);
     stompClient.connect({'Authorization':'jgusdflskdfhlskdf'}, function (frame) {
         setConnected(true);
         console.log('Connected: ' + frame);

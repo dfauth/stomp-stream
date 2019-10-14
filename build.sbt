@@ -29,11 +29,6 @@ val springWebsocket = "org.springframework" % "spring-websocket" % springVersion
 val javaxWebsocket = "javax.websocket" % "javax.websocket-api" % "1.1"
 val testNG = "org.testng" % "testng" % "6.14.3" % Test
 val tyrus = "org.glassfish.tyrus.bundles" % "tyrus-standalone-client-jdk" % "1.12" % Test
-val webJars = Seq("org.webjars" % "webjars-locator-core" % "latest.release",
-                  "org.webjars" % "sockjs-client" % "1.0.2",
-                  "org.webjars" % "stomp-websocket" % "2.3.3",
-                  "org.webjars" % "bootstrap" % "3.3.7",
-                  "org.webjars" % "jquery" % "3.1.0")
 
 
 val commonScalaDeps = Seq(scalactic, scalatest, akkaHttpSprayJson, scalaLogging, logback)
@@ -55,7 +50,7 @@ lazy val root = (project in file("."))
       javaxWebsocket,
       testNG,
       tyrus,
-      akkaHttpTestKit) ++ webJars
+      akkaHttpTestKit)
   )
   .enablePlugins(AssemblyPlugin)
 
