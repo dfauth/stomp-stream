@@ -18,6 +18,7 @@ function connect() {
     stompClient = Stomp.over(socket);
     stompClient.connect({'Authorization':'jgusdflskdfhlskdf'}, function (frame) {
         setConnected(true);
+        addSysmsg("connected: "+frame)
         console.log('Connected: ' + frame);
     });
 }
@@ -27,17 +28,24 @@ function disconnect() {
         stompClient.disconnect();
     }
     setConnected(false);
+    addSysmsg("disconnected")
     console.log("Disconnected");
 }
 
 function subscribe() {
-        stompClient.subscribe($( "#name" ), function (greeting) {
+        var topic = document.getElementById('name').value
+        stompClient.subscribe(topic, function (greeting) {
+        addSysmsg("subscribed to topic "+topic+" : "+frame)
         console.log('Subscribed: ' + frame);
         });
 }
 
-function showMessages(message) {
+function addMessage(message) {
     $("#messages").append("<tr><td>" + message + "</td></tr>");
+}
+
+function addSysmsg(sysmsg) {
+    $("#sysmsg").append("<tr><td>" + sysmsg + "</td></tr>");
 }
 
 $(function () {

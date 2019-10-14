@@ -93,6 +93,10 @@ public abstract class StompController<T> implements Processor<T, T> {
         subscriber.onNext(wrap(new String(bytes)));
     }
 
+    public void stop() {
+        subscriber.onComplete();
+    }
+
     protected abstract T wrap(String s);
 
     // publisher

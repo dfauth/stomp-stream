@@ -3,7 +3,6 @@ package com.github.dfauth.stomp
 import java.nio.ByteBuffer
 
 import akka.actor.ActorSystem
-import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.ws.{Message, TextMessage}
 import akka.http.scaladsl.server.Directives.{handleWebSocketMessages, path, _}
 import akka.stream.scaladsl.{Flow, Sink, Source}
@@ -12,7 +11,6 @@ import org.springframework.messaging.simp.stomp.{StompCommand, StompDecoder}
 import org.springframework.web.socket.PingMessage
 
 import scala.concurrent.duration._
-import scala.util.Try
 
 class StompStream(system: ActorSystem) extends LazyLogging{
 
@@ -38,6 +36,7 @@ class StompStream(system: ActorSystem) extends LazyLogging{
       val response = controller.createMessage(StompCommand.RECEIPT)
       controller.publish(response);
     }
+    case StompCommand.DISCONNECT => controller.stop();
   })
 
   def subscribe = {
