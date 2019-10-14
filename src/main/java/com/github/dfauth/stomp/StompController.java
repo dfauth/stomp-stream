@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 
@@ -26,20 +25,10 @@ public abstract class StompController<T> implements Processor<T, T> {
 
     private static final Logger logger = LoggerFactory.getLogger(StompController.class);
     private Subscriber<? super T> subscriber;
-    private Consumer<T> websocketConsumer;
     private StompDecoder decoder = new StompDecoder();
     private StompEncoder encoder = new StompEncoder();
-    private Consumer<org.springframework.messaging.Message<byte[]>> messageConsumer;
     private BiConsumer<StompCommand, Map<String, List<String>>> stompCommandConsumer;
     private MaybeLater<Subscription> subscription = new MaybeLater();
-
-    public void addWebsocketConsumer(Consumer<T> consumer) {
-        this.websocketConsumer = consumer;
-    }
-
-    public void addMessageConsumer(Consumer<org.springframework.messaging.Message<byte[]>> consumer) {
-        this.messageConsumer = consumer;
-    }
 
     public void addStompCommandConsumer(BiConsumer<StompCommand, Map<String, List<String>>> consumer) {
         this.stompCommandConsumer = consumer;
@@ -48,7 +37,11 @@ public abstract class StompController<T> implements Processor<T, T> {
     public void handleStrict(TextMessage.Strict m) {
         logger.info("received strict: "+m);
         decoder.decode(ByteBuffer.wrap(m.text().getBytes())).stream().forEach(m1 -> {
-            this.messageConsumer.accept(m1);
+            if(m1 instanceof GenericMessage) {
+                this.handleGeneric((GenericMessage<byte[]>) m1);
+            } else {
+                logger.warn("Unexpected type: "+m1);
+            }
         });
     }
 
@@ -120,8 +113,10 @@ public abstract class StompController<T> implements Processor<T, T> {
 
     @Override
     public void onNext(T m) {
-        websocketConsumer.accept(m);
+        _onNext(m);
     }
+
+    protected abstract void _onNext(T m);
 
     @Override
     public void onError(Throwable t) {
